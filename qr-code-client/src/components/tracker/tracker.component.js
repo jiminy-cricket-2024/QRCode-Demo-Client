@@ -10,7 +10,6 @@ const Tracker = () => {
   const params = useParams();
   const navigate = useNavigate();
   useEffect(() => {
-
     const fetchQRCodes = async () => {
       const response = await fetch(`${baseUrl}/api/qrcodes`);
       const data = await response.json();
@@ -32,22 +31,18 @@ const Tracker = () => {
     <div>
       {currentQr && (
         <div key={currentQr?.Id}>
-          
           <qr-code
-        contents={`${clientUrl}/track/${currentQr?.Id}`}
-        module-color={currentQr.SquareColor}
-        position-ring-color={currentQr.EyeColor}
-        position-center-color={currentQr.EyeColor}
-        style={{
-
-          width: '200px',
-          height: '200px',
-          margin: '2em auto',
-          backgroundColor: '#fff'
-        }}
-        
-      >
-      </qr-code>
+            contents={`${clientUrl}/track/${currentQr?.Id}`}
+            module-color={currentQr.SquareColor}
+            position-ring-color={currentQr.SquareColor}
+            position-center-color={currentQr.EyeColor}
+            style={{
+              width: "200px",
+              height: "200px",
+              margin: "2em auto",
+              backgroundColor: "#fff",
+            }}
+          ></qr-code>
           <p>ID: {currentQr.Id}</p>
           <p>Redirecting to {currentQr.RedirectUrl}</p>
           <hr />
