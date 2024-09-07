@@ -19,14 +19,16 @@ const CreateQR = () => {
         qrCodeInstance.current = new QRCodeStyling({
             width: 300,
             height: 300,
-            data: "https://qr-code-styling.com", // Placeholder data until user submits
+            margin: 7,
+            type: "svg",
+            data: "", // Placeholder data until user submits
             dotsOptions: {
                 color: squareColor,
-                type: "rounded",
+                type: "square", // Dots initially, will replace them later
             },
             cornersSquareOptions: {
                 color: squareColor,
-                type: "dot",
+                type: "dot", // Change type to create more space visually
             },
             cornersDotOptions: {
                 color: eyeColor,
@@ -38,7 +40,41 @@ const CreateQR = () => {
             },
         });
         qrCodeInstance.current.append(qrCodeRef.current);
-    }, []); // Initialize only once
+
+        // Function to modify only the rectangles under the element with ID 'clip-path-dot-color'
+        const modifyRects = () => {
+            const svgElement = qrCodeRef.current.querySelector("svg");
+
+            if (svgElement) {
+                // Select all <rect> elements that are inside the clip-path with id 'clip-path-dot-color'
+                const rects = svgElement.querySelectorAll("#clip-path-dot-color rect");
+
+                rects.forEach((rect) => {
+                    const x = parseFloat(rect.getAttribute("x"));
+                    const y = parseFloat(rect.getAttribute("y"));
+                    const width = parseFloat(rect.getAttribute("width"));
+                    const height = parseFloat(rect.getAttribute("height"));
+
+                    // Reduce the size of the rect to create spacing
+                    const newSize = 7; // Set new smaller size for the rects
+
+                    // Update the x and y attributes to keep the rect centered
+                    const newX = x + (width - newSize) / 2;
+                    const newY = y + (height - newSize) / 2;
+
+                    // Set new attributes for the smaller rects
+                    rect.setAttribute("width", newSize);
+                    rect.setAttribute("height", newSize);
+                    rect.setAttribute("x", newX);
+                    rect.setAttribute("y", newY);
+                });
+            }
+        };
+
+        // Run the function to modify the rects after the QR code is appended
+        modifyRects();
+
+    }, [squareColor, eyeColor]); // Re-run whenever the colors are updated
 
     // Handle form submission to update the QR code and call the API
     const handleSubmit = async (e) => {
@@ -47,9 +83,39 @@ const CreateQR = () => {
         qrCodeInstance.current.update({
             data: redirectUrl,
             dotsOptions: { color: squareColor },
-            cornersSquareOptions: { color: squareColor },
+            cornersSquareOptions: {
+                color: squareColor,
+                type: "dots", // This will make the corners visually smaller and appear padded
+            },
             cornersDotOptions: { color: eyeColor },
         });
+
+        // After updating the QR code, modify the circles into rects again
+        const svgElement = qrCodeRef.current.querySelector("svg");
+        if (svgElement) {
+            // Select all <rect> elements that are inside the clip-path with id 'clip-path-dot-color'
+            const rects = svgElement.querySelectorAll("#clip-path-dot-color rect");
+
+            rects.forEach((rect) => {
+                const x = parseFloat(rect.getAttribute("x"));
+                const y = parseFloat(rect.getAttribute("y"));
+                const width = parseFloat(rect.getAttribute("width"));
+                const height = parseFloat(rect.getAttribute("height"));
+
+                // Reduce the size of the rect to create spacing
+                const newSize = 7; // Set new smaller size for the rects
+
+                // Update the x and y attributes to keep the rect centered
+                const newX = x + (width - newSize) / 2;
+                const newY = y + (height - newSize) / 2;
+
+                // Set new attributes for the smaller rects
+                rect.setAttribute("width", newSize);
+                rect.setAttribute("height", newSize);
+                rect.setAttribute("x", newX);
+                rect.setAttribute("y", newY);
+            });
+        }
 
         // Call the API after the form is submitted
         try {

@@ -7,6 +7,35 @@ const ListView = () => {
   const [qrScans, setQrScans] = useState([]);
   const qrRefs = useRef({});
   const qrInstances = useRef({}); // Store QRCodeStyling instances
+  const hasModifiedRects = useRef(false); // To ensure rect modification runs only once
+
+  // Function to modify <rect> elements after all QR codes have been rendered
+  const modifyAllRects = () => {
+    if (hasModifiedRects.current) return; // Prevent re-execution if already modified
+
+    const rects = document.querySelectorAll("#clip-path-dot-color rect");
+    rects.forEach((rect) => {
+      const x = parseFloat(rect.getAttribute("x"));
+      const y = parseFloat(rect.getAttribute("y"));
+      const width = parseFloat(rect.getAttribute("width"));
+      const height = parseFloat(rect.getAttribute("height"));
+
+      // Reduce the size of the rect to create spacing
+      const newSize = 4;
+
+      // Update the x and y attributes to keep the rect centered
+      const newX = x + (width - newSize) / 2;
+      const newY = y + (height - newSize) / 2;
+
+      // Set new attributes for the smaller rects
+      rect.setAttribute("width", newSize);
+      rect.setAttribute("height", newSize);
+      rect.setAttribute("x", newX);
+      rect.setAttribute("y", newY);
+    });
+
+    hasModifiedRects.current = true; // Set flag to avoid re-modification
+  };
 
   useEffect(() => {
     const fetchQRCodes = async () => {
@@ -31,43 +60,59 @@ const ListView = () => {
 
     fetchQRCodes();
     fetchQRScans();
-  }, []);
+  }, []); // Fetch data only once when component mounts
 
-  // Initialize QRCodeStyling instances for each QR code
   useEffect(() => {
     if (qrCodes?.length > 0) {
       qrCodes.forEach((qrCode) => {
         if (qrRefs.current[qrCode.Id]) {
-          qrInstances.current[qrCode.Id] = new QRCodeStyling({
-            width: 200,
-            height: 200,
-            data: `${clientUrl}/track/${qrCode.Id}`,
-            dotsOptions: {
-              color: qrCode.SquareColor || "#000000",
-              type: "rounded",
-            },
-            cornersSquareOptions: {
-              color: qrCode.SquareColor || "#000000",
-              type: "dot",
-            },
-            cornersDotOptions: {
-              color: qrCode.EyeColor || "#000000",
-              type: "square",
-            },
-            backgroundOptions: {
-              color: "#ffffff", // White background
-            },
-            imageOptions: {
-              crossOrigin: "anonymous",
-              margin: 10,
-            },
-          });
+          // Initialize QRCodeStyling instance only if it hasn't been created yet
+          if (!qrInstances.current[qrCode.Id]) {
+            qrInstances.current[qrCode.Id] = new QRCodeStyling({
+              width: 200,
+              height: 200,
+              margin: 7,
+              type: "svg",
+              imageOptions: {
+                hideBackgroundDots: true
+              },
+              qrOptions: {
+                errorCorrectionLevel: 'H'
+              },
+              data: `${clientUrl}/track/${qrCode.Id}`,
+              dotsOptions: {
+                color: qrCode.SquareColor || "#000000",
+                type: "square",
+              },
+              cornersSquareOptions: {
+                color: qrCode.SquareColor || "#000000",
+                type: "dot",
+              },
+              cornersDotOptions: {
+                color: qrCode.EyeColor || "#000000",
+                type: "square",
+              },
+              backgroundOptions: {
+                color: "#ffffff", // White background
+              },
+              // imageOptions: {
+              //   crossOrigin: "anonymous",
+              //   margin: 10,
+              // },
+            });
 
-          qrInstances.current[qrCode.Id].append(qrRefs.current[qrCode.Id]);
+            // Append the QR code and modify rects after rendering
+            qrInstances.current[qrCode.Id].append(qrRefs.current[qrCode.Id]);
+
+            // Wait for the QR code to be fully rendered, then modify rects
+            modifyAllRects(); // Modify the SVGs globally
+            // setTimeout(() => {
+            // }, 500); // Small delay to ensure QR codes are rendered
+          }
         }
       });
     }
-  }, [qrCodes]);
+  }, [qrCodes]); // Run this effect whenever qrCodes are fetched
 
   // Handle download click for each QR code
   const handleDownload = (id, format = "png") => {
@@ -114,7 +159,7 @@ const ListView = () => {
                         <hr />
                         <div>
                           {qrScans?.map((x) =>
-                              x.QRCodeId == qrCode.Id ? (
+                              x.QRCodeId === qrCode.Id ? (
                                   <div key={x.ScanDateTime}>
                                     <div>
                                       Country: {x.Country}, {x.City}
