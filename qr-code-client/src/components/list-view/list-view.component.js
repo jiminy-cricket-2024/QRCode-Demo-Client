@@ -6,12 +6,11 @@ const ListView = () => {
   const [qrCodes, setQrCodes] = useState([]);
   const [qrScans, setQrScans] = useState([]);
   const qrRefs = useRef({});
-  const qrInstances = useRef({}); // Store QRCodeStyling instances
+  const qrInstances = useRef({});
   const hasModifiedRects = useRef(false); // To ensure rect modification runs only once
 
-  // Function to modify <rect> elements after all QR codes have been rendered
   const modifyAllRects = () => {
-    if (hasModifiedRects.current) return; // Prevent re-execution if already modified
+    if (hasModifiedRects.current) return;
 
     const rects = document.querySelectorAll("#clip-path-dot-color rect");
     rects.forEach((rect) => {
@@ -159,7 +158,7 @@ const ListView = () => {
                         <hr />
                         <div>
                           {qrScans?.map((x) =>
-                              x.QRCodeId === qrCode.Id ? (
+                              x.QRCodeId === qrCode.QRCodeId ? (
                                   <div key={x.ScanDateTime}>
                                     <div>
                                       Country: {x.Country}, {x.City}
