@@ -132,7 +132,7 @@ const ListView = () => {
         const svgBlob = new Blob([updatedSvg], { type: "image/svg+xml" });
         const url = URL.createObjectURL(svgBlob);
         const link = document.createElement("a");
-        link.download = `qr-code-${id}.svg`;
+        link.download = `qr-code-${qrCodeId}.svg`;
         link.href = url;
         link.click();
         URL.revokeObjectURL(url);
@@ -157,7 +157,7 @@ const ListView = () => {
           ctx.drawImage(image, 0, 0, canvasWidth, 200);
           const imgData = canvas.toDataURL(`image/${format}`);
           const link = document.createElement("a");
-          link.download = `qr-code-${id}.${format}`;
+          link.download = `qr-code-${qrCodeId}.${format}`;
           link.href = imgData;
           link.click();
           URL.revokeObjectURL(url);
