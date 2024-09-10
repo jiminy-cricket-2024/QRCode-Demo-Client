@@ -208,6 +208,13 @@ const CreateQR = () => {
             Generate QR Code
           </button>
         </form>
+
+        <a
+            href="/list"
+            className="w-full px-2 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-base"
+          >
+            View All QR Generated
+          </a>
       </div>
 
       {/* Preview Section */}
