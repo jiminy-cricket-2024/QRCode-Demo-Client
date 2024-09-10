@@ -1,9 +1,8 @@
-import logo from "./logo.svg";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "./App.css";
 import ListView from "./components/list-view/list-view.component";
 import CreateQR from "./components/create-qr/create-qr.component";
 import Tracker from "./components/tracker/tracker.component";
+import "./App.css";
 
 function App() {
   return (
