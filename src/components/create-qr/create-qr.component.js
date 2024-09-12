@@ -122,6 +122,9 @@ const CreateQR = () => {
     setTimeout(async () => {
       try {
         const svgElement = qrCodeRef.current.querySelector("svg");
+        svgElement.setAttribute("width", "200");
+        svgElement.setAttribute("height", "200");
+
         if (!svgElement) {
           console.error("SVG element is not available in the DOM");
           setLoading(false);
@@ -130,14 +133,45 @@ const CreateQR = () => {
 
         const serializer = new XMLSerializer();
         const rawSvg = serializer.serializeToString(svgElement);
-        const url = URL.createObjectURL(
-          new Blob([rawSvg], { type: "image/svg+xml" })
-        );
-        const link = document.createElement("a");
-        link.download = `qr-code-${id}.${format}`;
-        link.href = url;
-        link.click();
-        URL.revokeObjectURL(url);
+        if (format === "svg") {
+          
+  
+          const updatedSvg = new XMLSerializer().serializeToString(svgElement);
+          const svgBlob = new Blob([updatedSvg], { type: "image/svg+xml" });
+          const url = URL.createObjectURL(svgBlob);
+          const link = document.createElement("a");
+          link.download = `${id}.svg`;
+          link.href = url;
+          link.click();
+          URL.revokeObjectURL(url);
+        } else {
+          const image = new Image();
+          const svgBlob = new Blob(
+            [new XMLSerializer().serializeToString(svgElement)],
+            {
+              type: "image/svg+xml",
+            }
+          );
+          const url = URL.createObjectURL(svgBlob);
+          image.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const canvasWidth = 220;
+            const canvasHeight = 200;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            ctx.drawImage(image, 0, 0, canvasWidth, 200);
+            const imgData = canvas.toDataURL(`image/${format}`);
+            const link = document.createElement("a");
+            link.download = `${id}.${format}`;
+            link.href = imgData;
+            link.click();
+            URL.revokeObjectURL(url);
+          };
+          image.src = url;
+        }
 
         setId("");
         setRedirectUrl("");
