@@ -85,9 +85,6 @@
 //   }
 // };
 
-
-
-
 //   // Trigger the ZIP generation process
 //   const handleDownloadAllAsZip = async () => {
 //     setIsLoading(true); // Start the loader for the entire process
@@ -441,10 +438,6 @@
 
 // export default ListView;
 
-
-
-
-
 import React, { useEffect, useState, useRef } from "react";
 import QRCodeStyling from "qr-code-styling";
 import JSZip from "jszip";
@@ -460,11 +453,12 @@ const ListView = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false); // Loader for zip process
   const [isDownloadAllTriggered, setIsDownloadAllTriggered] = useState(false); // Track if "Download All" is pressed
-  const [selectedFormat, setSelectedFormat] = useState('svg'); // Store the selected format (svg or pdf)
+  const [selectedFormat, setSelectedFormat] = useState(); // Store the selected format (svg or pdf)
   const zip = useRef(new JSZip()); // Use ref to store JSZip instance
   const [renderedCount, setRenderedCount] = useState(0); // State to track rendered QR codes count
   const qrPerPage = 5;
 
+  
   // Pagination control
   const visiblePageLimit = 15; // Only show 15 pages at a time
   const [pageWindowStart, setPageWindowStart] = useState(1);
@@ -505,12 +499,12 @@ const ListView = () => {
       await renderAndDownloadQRCode(qrCode, selectedFormat);  // Use selectedFormat
     }
 
-    // Check if 20 pages have been processed or we are on the last page
-    const isEndOfBatch = currentPage % 20 === 0 || currentPage === totalPages;
+    // Check if we are on the last page or batch
+    const isEndOfBatch = currentPage === 5 || currentPage === totalPages;
 
     if (isEndOfBatch) {
       // Generate and download the ZIP for the current batch of 20 pages
-      if (selectedFormat === "svg") {
+      if (selectedFormat === "svg") {        
         await generateZipFile();
       } else if (selectedFormat === "pdf") {
         await generatePdfFile();
@@ -525,7 +519,7 @@ const ListView = () => {
       setTimeout(() => {
         setCurrentPage((prevPage) => prevPage + 1);  // Move to the next page
 
-        // Ensure that after updating the page, the batch process continues
+        // Ensure that after updating the page, the batch process continues with the selected format
         processQrCodesInBatch(); // Use the stored format from state
       }, 500);  // Small delay to allow state to update and prevent race conditions
     } else {
@@ -544,7 +538,9 @@ const ListView = () => {
     zip.current = new JSZip();  // Reset the ZIP for new batches
     setRenderedCount(0);  // Reset the rendered count
     setSelectedFormat('svg');  // Set selected format to SVG
-    processQrCodesInBatch();  // Start processing immediately
+    setTimeout(() => {
+      processQrCodesInBatch();  // Start processing with a dleay to give time to get updated selected format
+    }, 1000);
   };
 
   // Trigger the PDF generation process
@@ -555,11 +551,13 @@ const ListView = () => {
     zip.current = new JSZip();  // Reset the ZIP for new batches
     setRenderedCount(0);  // Reset the rendered count
     setSelectedFormat('pdf');  // Set selected format to PDF
-    processQrCodesInBatch();  // Start processing immediately
+    setTimeout(() => {
+      processQrCodesInBatch();  // Start processing with a dleay to give time to get updated selected format
+    }, 1000);
   };
 
   // Render and download a QR code as SVG or PDF
-  const renderAndDownloadQRCode = (qrCode, format = "svg") => {
+  const renderAndDownloadQRCode = (qrCode, format) => {
     return new Promise((resolve) => {
       setVisibleQrCodes((prevVisible) => ({
         ...prevVisible,
@@ -573,7 +571,7 @@ const ListView = () => {
             width: 200,
             height: 200,
             margin: 7,
-            type: "svg",
+            type: "svg",  // Always set to "svg" for rendering
             data: `${baseUrl}/api/scan/${qrCode.QRCodeId}`,
             dotsOptions: {
               color: qrCode.SquareColor || "#000000",
@@ -596,16 +594,18 @@ const ListView = () => {
 
           // Check format before downloading
           if (format === "svg") {
+            console.log("SVG DOWNLOAD MEN AGAYA");
             downloadQRCodeAsSVG(qrCode.Id, qrCode.QRCodeId).then(() => {
               resolve();  // Proceed to the next QR code after downloading
             });
           } else if (format === "pdf") {
+            console.log("PDFFFFFFFF DOWNLOAD MEN AGAYA");
             downloadQRCodeAsPDF(qrCode.Id, qrCode.QRCodeId).then(() => {
               resolve();  // Proceed to the next QR code after downloading
             });
           }
         }
-      }, 500);  // Allow some time for QR code rendering
+      }, 800);  // Allow some time for QR code rendering
     });
   };
 
@@ -771,8 +771,6 @@ const ListView = () => {
           ⚠ Warning: This is a bulk operation that might take time. Please be patient until it finishes off completely.
         </p>
       </div>
-      
-      
       )}
       <h2 className="text-3xl font-bold text-center mb-6">All QR Codes</h2>
 
