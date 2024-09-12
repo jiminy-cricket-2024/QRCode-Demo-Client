@@ -458,7 +458,6 @@ const ListView = () => {
   const [renderedCount, setRenderedCount] = useState(0); // State to track rendered QR codes count
   const qrPerPage = 5;
 
-  
   // Pagination control
   const visiblePageLimit = 15; // Only show 15 pages at a time
   const [pageWindowStart, setPageWindowStart] = useState(1);
@@ -484,7 +483,9 @@ const ListView = () => {
   const generateVanityUrl = (redirectUrl, qrId) => {
     const protocol = redirectUrl.startsWith("https") ? "https" : "http";
     const vanityBaseUrl = "www.hil.ls.com";
-    return `${protocol}://${vanityBaseUrl}/${qrId}`;
+    const base64String = btoa(redirectUrl);
+    console.log(base64String);
+    return `${baseUrl}/vanity/${base64String}`;
   };
 
   // Process QR codes in batches and download ZIP after every 20 pages
@@ -496,7 +497,7 @@ const ListView = () => {
 
     // Render and download each QR code in the current page batch
     for (const qrCode of currentQRCodes) {
-      await renderAndDownloadQRCode(qrCode, selectedFormat);  // Use selectedFormat
+      await renderAndDownloadQRCode(qrCode, selectedFormat); // Use selectedFormat
     }
 
     // Check if we are on the last page or batch
@@ -504,7 +505,7 @@ const ListView = () => {
 
     if (isEndOfBatch) {
       // Generate and download the ZIP for the current batch of 20 pages
-      if (selectedFormat === "svg") {        
+      if (selectedFormat === "svg") {
         await generateZipFile();
       } else if (selectedFormat === "pdf") {
         await generatePdfFile();
@@ -517,42 +518,42 @@ const ListView = () => {
     // If there are more pages to process, continue to the next batch
     if (currentPage < totalPages) {
       setTimeout(() => {
-        setCurrentPage((prevPage) => prevPage + 1);  // Move to the next page
+        setCurrentPage((prevPage) => prevPage + 1); // Move to the next page
 
         // Ensure that after updating the page, the batch process continues with the selected format
         processQrCodesInBatch(); // Use the stored format from state
-      }, 500);  // Small delay to allow state to update and prevent race conditions
+      }, 500); // Small delay to allow state to update and prevent race conditions
     } else {
       // Once all pages are processed, stop the loader
       setIsLoading(false);
-      setIsDownloadAllTriggered(false);  // Mark process as finished
-      setSelectedFormat('svg');  // Reset format back to default (SVG)
+      setIsDownloadAllTriggered(false); // Mark process as finished
+      setSelectedFormat("svg"); // Reset format back to default (SVG)
     }
   };
 
   // Trigger the ZIP generation process
   const handleDownloadAllAsZip = async () => {
-    setIsLoading(true);  // Start the loader for the entire process
-    setIsDownloadAllTriggered(true);  // Mark that "Download All" is triggered
-    setCurrentPage(1);  // Start from the first page
-    zip.current = new JSZip();  // Reset the ZIP for new batches
-    setRenderedCount(0);  // Reset the rendered count
-    setSelectedFormat('svg');  // Set selected format to SVG
+    setIsLoading(true); // Start the loader for the entire process
+    setIsDownloadAllTriggered(true); // Mark that "Download All" is triggered
+    setCurrentPage(1); // Start from the first page
+    zip.current = new JSZip(); // Reset the ZIP for new batches
+    setRenderedCount(0); // Reset the rendered count
+    setSelectedFormat("svg"); // Set selected format to SVG
     setTimeout(() => {
-      processQrCodesInBatch();  // Start processing with a dleay to give time to get updated selected format
+      processQrCodesInBatch(); // Start processing with a dleay to give time to get updated selected format
     }, 1000);
   };
 
   // Trigger the PDF generation process
   const handleDownloadAllAsPdf = async () => {
-    setIsLoading(true);  // Start the loader for the entire process
-    setIsDownloadAllTriggered(true);  // Mark that "Download All" is triggered
-    setCurrentPage(1);  // Start from the first page
-    zip.current = new JSZip();  // Reset the ZIP for new batches
-    setRenderedCount(0);  // Reset the rendered count
-    setSelectedFormat('pdf');  // Set selected format to PDF
+    setIsLoading(true); // Start the loader for the entire process
+    setIsDownloadAllTriggered(true); // Mark that "Download All" is triggered
+    setCurrentPage(1); // Start from the first page
+    zip.current = new JSZip(); // Reset the ZIP for new batches
+    setRenderedCount(0); // Reset the rendered count
+    setSelectedFormat("pdf"); // Set selected format to PDF
     setTimeout(() => {
-      processQrCodesInBatch();  // Start processing with a dleay to give time to get updated selected format
+      processQrCodesInBatch(); // Start processing with a dleay to give time to get updated selected format
     }, 1000);
   };
 
@@ -571,7 +572,7 @@ const ListView = () => {
             width: 200,
             height: 200,
             margin: 7,
-            type: "svg",  // Always set to "svg" for rendering
+            type: "svg", // Always set to "svg" for rendering
             data: `${baseUrl}/api/scan/${qrCode.QRCodeId}`,
             dotsOptions: {
               color: qrCode.SquareColor || "#000000",
@@ -596,16 +597,16 @@ const ListView = () => {
           if (format === "svg") {
             console.log("SVG DOWNLOAD MEN AGAYA");
             downloadQRCodeAsSVG(qrCode.Id, qrCode.QRCodeId).then(() => {
-              resolve();  // Proceed to the next QR code after downloading
+              resolve(); // Proceed to the next QR code after downloading
             });
           } else if (format === "pdf") {
             console.log("PDFFFFFFFF DOWNLOAD MEN AGAYA");
             downloadQRCodeAsPDF(qrCode.Id, qrCode.QRCodeId).then(() => {
-              resolve();  // Proceed to the next QR code after downloading
+              resolve(); // Proceed to the next QR code after downloading
             });
           }
         }
-      }, 800);  // Allow some time for QR code rendering
+      }, 800); // Allow some time for QR code rendering
     });
   };
 
@@ -617,7 +618,7 @@ const ListView = () => {
 
     const serializer = new XMLSerializer();
     const rawSvg = serializer.serializeToString(svgElement);
-    zip.current.file(`${qrCodeId}.svg`, rawSvg);  // Add the QR code to the current ZIP
+    zip.current.file(`${qrCodeId}.svg`, rawSvg); // Add the QR code to the current ZIP
   };
 
   // Download QR code as PDF
@@ -652,7 +653,7 @@ const ListView = () => {
   const handleToggleQrCode = (qrCodeId) => {
     setVisibleQrCodes((prevVisible) => {
       const newVisible = {};
-      Object.keys(prevVisible).forEach((key) => (newVisible[key] = false));  // Close previous QR codes
+      Object.keys(prevVisible).forEach((key) => (newVisible[key] = false)); // Close previous QR codes
       return { ...newVisible, [qrCodeId]: !prevVisible[qrCodeId] };
     });
 
@@ -743,9 +744,9 @@ const ListView = () => {
       renderedCount < qrCodes.length &&
       currentPage <= totalPages
     ) {
-      processQrCodesInBatch();  // Automatically process the next page
+      processQrCodesInBatch(); // Automatically process the next page
     }
-  }, [currentPage, isDownloadAllTriggered]);  // Only process when "Download All" is triggered and page changes
+  }, [currentPage, isDownloadAllTriggered]); // Only process when "Download All" is triggered and page changes
 
   // Handle Pagination Scroll
   const handlePageClick = (pageNum) => {
@@ -766,11 +767,12 @@ const ListView = () => {
       {/* Full-screen loader */}
       {isLoading && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-50">
-        <FaSpinner className="text-white text-6xl animate-spin" />
-        <p className="mt-4 text-yellow-500 text-center">
-          ⚠ Warning: This is a bulk operation that might take time. Please be patient until it finishes off completely.
-        </p>
-      </div>
+          <FaSpinner className="text-white text-6xl animate-spin" />
+          <p className="mt-4 text-yellow-500 text-center">
+            ⚠ Warning: This is a bulk operation that might take time. Please be
+            patient until it finishes off completely.
+          </p>
+        </div>
       )}
       <h2 className="text-3xl font-bold text-center mb-6">All QR Codes</h2>
 
@@ -782,6 +784,22 @@ const ListView = () => {
           <p className="font-semibold">ID: {qrCode.Id}</p>
           <p>QR Code Id: {qrCode.QRCodeId}</p>
           <p>Redirect URL: {qrCode.RedirectUrl}</p>
+          <p>
+            Vanity URL:
+            <a
+              href={qrCode.RedirectUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden text-ellipsis whitespace-nowrap max-w-xxl inline-block align-middle"
+              style={{
+                display: "inline-block",
+                verticalAlign: "middle",
+                maxWidth: "78rem",
+              }} // Adjust max-width to your preference
+            >
+              {generateVanityUrl(qrCode.RedirectUrl, qrCode.QRCodeId)}
+            </a>
+          </p>
 
           <button
             onClick={() => handleToggleQrCode(qrCode.Id)}
@@ -798,6 +816,26 @@ const ListView = () => {
                 className="mx-auto mt-4 p-0 bg-white flex items-center justify-center"
                 style={{ width: "200px", height: "200px" }}
               ></div>
+
+              <div className="mt-2">
+                {/* Display Vanity URL */}
+                <p className="text-gray-600">
+                  Vanity URL:{" "}
+                  <span className="font-semibold">
+                    {generateVanityUrl(qrCode.RedirectUrl, qrCode.QRCodeId)}
+                  </span>
+                </p>
+
+                {/* Link pointing to RedirectUrl */}
+                <a
+                  href={qrCode.RedirectUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  Go to the Redirect URL
+                </a>
+              </div>
 
               <div className="mt-4 flex justify-center space-x-4">
                 <button
