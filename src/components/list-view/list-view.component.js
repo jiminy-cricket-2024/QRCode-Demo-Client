@@ -481,10 +481,10 @@ const ListView = () => {
   const totalPages = qrCodes.length ? Math.ceil(qrCodes.length / qrPerPage) : 0;
 
   const generateVanityUrl = (redirectUrl, qrId) => {
-    const protocol = redirectUrl.startsWith("https") ? "https" : "http";
-    const vanityBaseUrl = "www.hil.ls.com";
-    const base64String = btoa(redirectUrl);
-    console.log(base64String);
+    // const protocol = redirectUrl?.startsWith("https") ? "https" : "http";
+    // const vanityBaseUrl = "www.hil.ls.com";
+    // const base64String = btoa(redirectUrl);
+    // console.log(base64String);
     return `${baseUrl}/vanity/${qrId}`;
   };
 
