@@ -485,7 +485,7 @@ const ListView = () => {
     const vanityBaseUrl = "www.hil.ls.com";
     const base64String = btoa(redirectUrl);
     console.log(base64String);
-    return `${baseUrl}/vanity/${base64String}`;
+    return `${baseUrl}/vanity/${qrId}`;
   };
 
   // Process QR codes in batches and download ZIP after every 20 pages
@@ -501,7 +501,7 @@ const ListView = () => {
     }
 
     // Check if we are on the last page or batch
-    const isEndOfBatch = currentPage === 5 || currentPage === totalPages;
+    const isEndOfBatch = currentPage % 20 === 0  || currentPage === totalPages;
 
     if (isEndOfBatch) {
       // Generate and download the ZIP for the current batch of 20 pages
